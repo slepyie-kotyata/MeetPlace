@@ -82,3 +82,8 @@ CMakeLists.txt.user*
 .uic/
 /build*/
 /.qtcreator/
+/CMakeFiles
+/.cmake
+/CMAKE_PREFIX_PATH
+CMakeCache.txt
+qtcsettings.cmake
