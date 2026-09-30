@@ -1,0 +1,8 @@
+module DesignTokens
+
+Light_modeTheme 1.0 Light_modeTheme.qml
+Light_modeColors 1.0 Light_modeColors.qml
+singleton Light_mode 1.0 Light_mode.qml
+Dark_modeTheme 1.0 Dark_modeTheme.qml
+Dark_modeColors 1.0 Dark_modeColors.qml
+singleton Dark_mode 1.0 Dark_mode.qml

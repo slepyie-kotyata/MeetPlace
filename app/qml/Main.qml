@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls.Basic
-
+import "screens"
 import QtQuick.VirtualKeyboard
 
 ApplicationWindow {
@@ -18,7 +18,9 @@ ApplicationWindow {
     property color reallyLight: "#e7e7e7"
     property color light: "#e0e0e0"
 
-
+    MainAppWindow {
+            anchors.fill: parent
+        }
     InputPanel {
         id: inputPanel
         z: 99

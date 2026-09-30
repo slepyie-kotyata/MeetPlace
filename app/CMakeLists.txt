@@ -2,13 +2,35 @@ qt_add_executable(appMeetPlace
     main.cpp
 )
 
+set_source_files_properties(
+    qml/theme/DesignTokens/Light_mode.qml
+    qml/theme/DesignTokens/Dark_mode.qml
+    PROPERTIES QT_QML_SINGLETON_TYPE TRUE
+)
+
 qt_add_qml_module(appMeetPlace
     URI MeetPlace
     QML_FILES
         qml/Main.qml
-        RESOURCES qml/components/.gitkeep
-        RESOURCES qml/screens/.gitkeep
-        RESOURCES qml/theme/.gitkeep
+        qml/screens/MainAppWindow.qml
+        qml/components/ControlsTextField.qml
+        qml/components/MainButton_Light.qml
+        qml/components/ThemeSwitch.qml
+        qml/theme/DesignTokens/Dark_mode.qml
+        qml/theme/DesignTokens/Dark_modeColors.qml
+        qml/theme/DesignTokens/Dark_modeTheme.qml
+        qml/theme/DesignTokens/Light_mode.qml
+        qml/theme/DesignTokens/Light_modeColors.qml
+        qml/theme/DesignTokens/Light_modeTheme.qml
+    RESOURCES
+        assets/indicator.svg
+        assets/indicator_1.png
+        assets/indicator_2.png
+        assets/indicator_3.svg
+        assets/indicator_4.svg
+        assets/indicator_5.svg
+        assets/indicator_7.svg
+        assets/indicator_8.svg
         # По мере создания сюда добавлются новые интерфейсы:
         # qml/screens/StartScreen.qml
         # qml/components/VideoTile.qml
