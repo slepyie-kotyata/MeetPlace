@@ -1,0 +1,19 @@
+# CODEOWNERS — правила ревью по путям
+# Owner обязан ревьюить PR, затрагивающие его пути.
+
+# === Доменные ветки: фича-PR в core / ui ===
+# Ветка core: Dev2 — media, Dev3 — всё остальное
+/core/media/**          @Son1kXDev
+/core/net/**            @Sangiria
+/core/models/**         @Sangiria
+/core/call/**           @Sangiria
+/core/CMakeLists.txt    @Sangiria
+
+# Ветка ui: Dev1
+/app/**                 @ftorn1k
+/importedcontent/**     @ftorn1k
+
+# === main: корень и контракты ===
+# Корневой CMakeLists.txt — integration owner Dev2
+/CMakeLists.txt         @Son1kXDev
+/PLAN.md                @ftorn1k @Son1kXDev @Sangiria
