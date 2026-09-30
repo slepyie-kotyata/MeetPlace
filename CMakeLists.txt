@@ -4,12 +4,16 @@ project(MeetPlace VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Quick VirtualKeyboard)
+find_package(Qt6 REQUIRED COMPONENTS Quick VirtualKeyboard Multimedia)
 
 qt_standard_project_setup(REQUIRES 6.10)
 
 if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/importedcontent/CMakeLists.txt")
     add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/importedcontent)
+endif()
+
+if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/tests/media-sandbox")
+    add_subdirectory(tests/media-sandbox)
 endif()
 
 add_subdirectory(core)
