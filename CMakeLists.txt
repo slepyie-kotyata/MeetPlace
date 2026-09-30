@@ -12,5 +12,9 @@ if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/importedcontent/CMakeLists.txt")
     add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/importedcontent)
 endif()
 
+if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/tests/media-sandbox")
+    add_subdirectory(tests/media-sandbox)
+endif()
+
 add_subdirectory(core)
 add_subdirectory(app)

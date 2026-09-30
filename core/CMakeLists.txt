@@ -1,8 +1,8 @@
 qt_add_library(core STATIC
 call/.gitkeep
-media/.gitkeep
 models/.gitkeep
-net/.gitkeep)
+net/.gitkeep
+media/LocalCameraManager.h media/LocalCameraManager.cpp)
 
 target_sources(core PRIVATE
     # Пример заполнения для будущих файлов:
