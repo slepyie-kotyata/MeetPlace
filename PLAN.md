@@ -12,7 +12,7 @@
 | Фреймворк | Qt 6.7+ / C++20 / QML | Цель проекта — продемонстрировать навыки Qt (портфолио) |
 | WebRTC-стек | **libdatachannel** | Лёгкая C++ библиотека, отличная документация, Qt-совместима |
 | Топология | **P2P mesh** (до 4 участников) | Только сигнальный сервер + STUN/TURN, без SFU |
-| Сигналинг | WebSocket, JSON-протокол | Node.js-сервер (~200 строк) |
+| Сигналинг | WebSocket, JSON-протокол | Go-сервер (~200 строк) |
 | Чат | WebRTC DataChannel | Не нагружает сигнальный сервер, чище архитектурно |
 | NAT-обход | STUN (Google) + TURN (coturn) как fallback | TURN нужен для симметричных NAT |
 | Платформы MVP | Windows, macOS, Linux | Android/iOS — этап 2 (после MVP) |
@@ -47,7 +47,7 @@
 │  └──────────────┴─────────────┴─────────────┘ │
 └───────────────────────────────────────────────┘
         ↕ WebSocket (JSON)          ↕ SRTP/UDP
-   Signaling server (Node.js)    P2P mesh peers
+   Signaling server (Go)         P2P mesh peers
 ```
 
 ### Состояния CallController
@@ -66,9 +66,11 @@ Idle → Connecting → Connected → (Error → Idle)
 |---|---|---|
 | **Dev1 (UI Lead)** — сильнее в UI/дизайне | QML-интерфейс, темы, анимации, экраны ошибок | Qt Quick Controls, GridView/ListView, QML Singleton, Transitions, биндинги к C++ |
 | **Dev2 (Media)** | Захват и рендеринг аудио/видео, screen share, mute | QMediaDevices, QCamera, QVideoSink, QVideoFrame, QThread |
-| **Dev3 (Network/Logic)** | Сигналинг, WebRTC-сессии, чат-модель, переподключение | QWebSocket, QJsonDocument, QAbstractListModel, Q_PROPERTY |
+| **Dev3 (Network/Logic)** | Сигналинг, WebRTC-сессии, чат-модель, переподключение. **Ведёт Go-сервер (ветка `server`)** | QWebSocket, QJsonDocument, QAbstractListModel, Q_PROPERTY |
 
 **Правило «second»:** у каждого модуля есть второй владелец из другой зоны (Dev1↔Dev2, Dev2↔Dev3, Dev3↔Dev1) — страховка от болезни/выпадения участника.
+
+**Integration owner:** корневой `CMakeLists.txt` редактирует только **Dev2**; остальные запрашивают изменения через PR/issue.
 
 ---
 
@@ -167,12 +169,14 @@ MeetPlace/
 │   ├── media/              # LocalCameraManager, AudioManager, ScreenCapture
 │   ├── net/                # SignalClient, PeerManager, ChatChannel
 │   └── models/             # ParticipantModel, ChatModel
-├── signaling-server/       # Node.js (ws): комнаты + relay
 ├── tests/                  # юнит- и интеграционные тесты
 ├── .github/workflows/      # CI: build win/mac/linux + clang-format
-├── CMakeLists.txt
+├── CMakeLists.txt          # редактирует только Dev2 (integration owner)
 └── PLAN.md
 ```
+
+**Go-сигнальный сервер** (`cmd/`, `internal/ws/`, `go.mod`) живёт в сиротской ветке `server`,
+с main НЕ мержится. Ведёт Dev3.
 
 ---
 
@@ -187,7 +191,7 @@ MeetPlace/
 | Все | Структура репо (§6), CMake, GitHub Actions (сборка 3 ОС + clang-format), библиотека libdatachannel подключается в CMake | CI зелёный на 3 ОС |
 | Dev1 | Стартовый экран (имя + ID комнаты), окно звонка (VideoGrid-заглушка, CallBar: Mute/Camera/Leave), Theme Singleton (dark/light), моковые данные | Навигация экранов работает, темы переключаются |
 | Dev2 | `LocalCameraManager`: QMediaDevices → QCamera → QVideoSink → self-view в QML. `AudioManager`: список устройств, уровень микрофона в QML-индикатор. Исследовать конвертацию QVideoFrame → формат libdatachannel | Своё видео с камеры видно, индикатор аудио живой; **проверить macOS permissions (NSCameraUsageDescription)** |
-| Dev3 | Сигнальный сервер (Node.js ws): комнаты, relay, лимит 4. `SignalClient` на QWebSocket + JSON-протокол §4. Каркас `CallController` (state machine) | Интеграционный тест: 2 клиента обмениваются join/offer/ice через сервер |
+| Dev3 | Сигнальный сервер на **Go** (`cmd/`, `internal/ws/`): комнаты, relay, лимит 4. `SignalClient` на QWebSocket + JSON-протокол §4. Каркас `CallController` (state machine) | Интеграционный тест: 2 клиента обмениваются join/offer/ice через сервер. `go vet`/`go test` зелёные |
 
 **Риски:** капризы камеры/микрофона и permissions на macOS — проверять сразу, не в конце.
 
@@ -250,7 +254,8 @@ MeetPlace/
 | Участник выпадает на неделю | Контракты §4–5 с первой недели; правило «second» (§3) |
 | Permissions камеры/микрофона на macOS | Dev2 проверяет уже в спринте 1 |
 | Интеграция развалится в конце | Контракты §4–5; интеграционные сборки в CI каждую неделю |
-| 10–20 ч/нед на человека мало | Демо по пятницам (хотя бы скриншот),weekly синк 30–60 мин, задачи в GitHub Projects, PR с код-ревью |
+| Конфликты merge между ветками | Правила §14.3 (владение путями, один integration owner); weekly PR в main |
+| 10–20 ч/нед на человека мало | Демо по пятницам (хотя бы скриншот), weekly синк 30–60 мин, задачи в GitHub Projects, PR с код-ревью |
 
 ---
 
@@ -260,3 +265,50 @@ MeetPlace/
 - **Демо по пятницам** в общем чате (скриншот/запись)
 - **GitHub Projects:** все задачи в трекере; ветки + PR с код-ревью друг у друга
 - **CI:** каждая неделя заканчивается собираемым проектом на всех 3 ОС
+
+---
+
+## 14. Стратегия ветвления
+
+### 14.1 Топология
+
+```
+main ──────────────────────●──(weekly PR)──●──►   защита: только через PR
+  ├── core ──●──●──●────────▲                 интеграционная ветка Qt-логики (Dev2 + Dev3)
+  ├── ui ────●──●───────────│                 интеграционная ветка QML (Dev1)
+  └── server ●──●──●────────×                 сиротская Go-ветка, с main НЕ мержится
+              │
+              └── feat/*, fix/* — короткоживущие ветки от своей доменной ветки
+```
+
+| Ветка | Владелец | Пути (правило «своё») | Ритм |
+|---|---|---|---|
+| `main` | все через PR | контракты: PLAN.md §4–5 | приёмник weekly PR |
+| `core` | Dev2 + Dev3 (см. §14.2) | `core/**` | PR → main каждую пятницу |
+| `ui` | Dev1 | `app/**`, `importedcontent/**` | PR → main каждую пятницу |
+| `server` | Dev3 | `cmd/**`, `internal/**`, `go.mod` | не мержится в main; свой CI (go vet/test) |
+
+### 14.2 Ветка core: суб-владение
+
+- **Dev2:** `core/media/**`
+- **Dev3:** `core/net/**`, `core/models/**`, `core/call/**`
+- `core/CMakeLists.txt` — редактирует только Dev3; Dev2 просит добавление своих таргетов через фича-PR
+- Каждый работает в короткоживущих ветках `feat/media-*` (Dev2) / `feat/net-*` (Dev3) от `core`,
+  PR обратно в `core`; ревью — «second» из другой зоны (§3)
+
+### 14.3 Критические точки конфликтов
+
+1. **Корневой `CMakeLists.txt`** — редактирует только **Dev2** (integration owner).
+   `importedcontent/` подхватывается автоматически, ветка `ui` не трогает корень.
+2. **Контракты (§4–5)** — меняются ТОЛЬКО через PR в `main`; после мерджа обе стороны
+   (`core`, `ui`) подтягивают main.
+3. **`importedcontent/`** (автогенерация плагина Figma to Qt):
+   - коммитит только Dev1, остальные не трогают;
+   - сгенерированный код не правится руками; кастомизация — обёртки в `app/qml/components/`;
+   - конфликт сгенерированного CMakeLists решается регенерацией, а не ручным мерджем.
+
+### 14.4 Ритм недели (пятница)
+
+1. Доменная ветка → PR в `main` (ревью от «second»).
+2. После мерджа: `git merge origin/main` в свою доменную ветку — divergence не накапливается.
+3. Демо-скриншоты в чат.
