@@ -1,11 +1,16 @@
 package ws
 
 import (
-	"fmt"
 	"log"
 	"net/http"
+
 	"github.com/gorilla/websocket"
 )
+
+//TODO: валидация + ошибка неправильного message
+//TODO: функция sendMessage (?)
+//TODO: handling client disconnecting
+//TODO: leave
 
 var upgrader = websocket.Upgrader{
 	ReadBufferSize: 1024,
@@ -15,24 +20,6 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-func reader (conn *websocket.Conn) {
-	for {
-		_, p, err := conn.ReadMessage()
-
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		fmt.Println(string(p))
-
-		// if err := conn.WriteMessage(messageType, p); err != nil {
-		// 	log.Println(err)
-		// 	return
-		// }
-	}
-}
-
 func WsHandler(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {		
@@ -40,8 +27,6 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Println("client connected")
-	
-	reader(conn)
+	log.Println("client connected")	
 }
 

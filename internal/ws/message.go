@@ -1,21 +1,24 @@
 package ws
 
-import (
-	"sync"
-
-	"github.com/gorilla/websocket"
+//error codes const
+const (
+	RoomFull = "room-full"
+	UnknownType = "unknown-type"
+	InvalidMessage = "invalid-message"
 )
 
+// types const
 const (
 	Join = "join"
-	Joined = "joined"
-	PeerJoined = "peer-joined"
 	Leave = "leave"
-	Left = "left"
-	PeerLeft = "peer-left"
 	Offer = "offer"
 	Answer = "answer"
 	Ice = "ice"
+	//server messages type
+	Left = "left"
+	Joined = "joined"
+	PeerJoined = "peer-joined"
+	PeerLeft = "peer-left"
 	Error = "error"
 )
 
@@ -39,12 +42,6 @@ type WebRTCPayload struct {
 }
 
 type PeerInfo struct {
-	PeerId	string	`json:"peer_id"`
-	Name	string	`json:"name"`
-}
-
-type Hub struct {
-	mu			sync.RWMutex
-	Peers 		map[string]*websocket.Conn
-	Rooms		map[string][]PeerInfo
+	PeerId	string			`json:"peer_id"`
+	Name	string			`json:"name"`
 }
