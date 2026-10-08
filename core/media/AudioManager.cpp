@@ -45,6 +45,8 @@ void AudioManager::selectOutput(const QString &deviceId)
 
 void AudioManager::startMeter()
 {
+    if(m_metering) stopMeter();
+
     QMicrophonePermission micPermission;
     switch (qGuiApp->checkPermission(micPermission)) {
     case Qt::PermissionStatus::Undetermined:
@@ -57,8 +59,10 @@ void AudioManager::startMeter()
         break;
     }
 
-    if (m_inputDevice.isNull())
+    if (m_inputDevice.isNull()) {
         m_inputDevice = QMediaDevices::defaultAudioInput();
+        emit selectedInputChanged();
+    }
 
     const QAudioFormat fmt = m_inputDevice.preferredFormat();
     qDebug() << "Mic start:" << m_inputDevice.description()
@@ -67,6 +71,12 @@ void AudioManager::startMeter()
 
     m_source = new QAudioSource(m_inputDevice, fmt, this);
     m_io = m_source->start();
+    if (!m_io) {
+        qWarning() << "Failed to start audio input";
+        m_source->deleteLater();
+        m_source = nullptr;
+        return;
+    }
     m_timer->start();
     m_metering = true;
     emit meteringChanged();
@@ -91,6 +101,20 @@ void AudioManager::processSamples(const void *data, qsizetype bytes)
         count = bytes / 4;
         for (qsizetype i = 0; i < count; ++i)
             sum += double(s[i]) * double(s[i]);
+    } else if (sf == QAudioFormat::Int32) {
+        const auto *s = static_cast<const qint32 *>(data);
+        count = bytes / 4;
+        for (qsizetype i = 0; i < count; ++i) {
+            const double v = s[i] / 2147483648.0;
+            sum += v * v;
+        }
+    } else if (sf == QAudioFormat::UInt8) {
+        const auto *s = static_cast<const quint8 *>(data);
+        count = bytes;
+        for (qsizetype i = 0; i < count; ++i) {
+            const double v = (s[i] - 128.0) / 128.0;
+            sum += v * v;
+        }
     } else {
         return;
     }
