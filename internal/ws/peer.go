@@ -8,17 +8,19 @@ import (
 
 type Peer struct {
 	Id			string
-	RoomId		string
+	Name		string
 	conn		*websocket.Conn
 	Outgoing	chan Message
 }
 
-func NewPeer(conn *websocket.Conn) *Peer {
+func NewPeer(peerId, peerName string, conn *websocket.Conn) *Peer {
 	return &Peer{
 		conn: conn,
 		Outgoing: make(chan Message),
 	}
 }
+
+//TODO: сделать Write, доделать Read
 
 // Read: читает и смотрит не умерло ли соединение
 // если оно умерло, вызывает функцию Close -> в ней:
@@ -26,7 +28,9 @@ func NewPeer(conn *websocket.Conn) *Peer {
 // Write: читает из канала, пока он не закрыт, при ошибке отправки тоже вызывает Close
 
 func (p *Peer) Close() {
-	//sync.Once ()
+	// sync.Once()
+	// удаление из Hub
+	// закрытие соединения
 	log.Println("Connection closed")
 }
 
@@ -40,7 +44,6 @@ func (p *Peer) Read() {
 			log.Printf("Closing connection, : %s", err.Error())
 			break
 		}
-
-		
+		// при каждом полученном сообщениии вызывает HandleMessage
 	}
 }
