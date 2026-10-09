@@ -38,6 +38,7 @@ func (ws *WsService) WsHandler(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]string{
 			"message": "User not found",
 		})
+		return
 	}
 
 	conn, err := upgrader.Upgrade(w, r, nil)
@@ -45,7 +46,7 @@ func (ws *WsService) WsHandler(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Upgrade error: %s", err.Error())
 		return
 	}
-	peer := NewPeer(peerId, peerName, conn)
+	peer := NewPeer(peerId, peerName, roomId, conn)
 	
 	if err = hub.Add(roomId, peer); err != nil {
 		_ = conn.WriteJSON(Message{

@@ -2,21 +2,26 @@ package ws
 
 import (
 	"log"
+	"sync"
 
 	"github.com/gorilla/websocket"
 )
 
 type Peer struct {
-	Id			string
-	Name		string
+	id			string
+	name		string
+	roomID		string
 	conn		*websocket.Conn
-	Outgoing	chan Message
+	outgoing	chan Message
 }
 
-func NewPeer(peerId, peerName string, conn *websocket.Conn) *Peer {
+func NewPeer(peerId, peerName, roomId string, conn *websocket.Conn) *Peer {
 	return &Peer{
+		id: peerId,
+		name: peerName,
+		roomID: roomId,
 		conn: conn,
-		Outgoing: make(chan Message),
+		outgoing: make(chan Message, 16),
 	}
 }
 
@@ -28,10 +33,27 @@ func NewPeer(peerId, peerName string, conn *websocket.Conn) *Peer {
 // Write: читает из канала, пока он не закрыт, при ошибке отправки тоже вызывает Close
 
 func (p *Peer) Close() {
-	// sync.Once()
-	// удаление из Hub
-	// закрытие соединения
+	var once sync.Once
+	once.Do(func(){
+		// Broadcast остальным
+		p.conn.Close()
+		hub.Remove(p)
+		close(p.outgoing)
+	})
 	log.Println("Connection closed")
+}
+
+func (p *Peer) Broadcast()
+
+func (p *Peer) Write() {
+	defer p.Close()
+	
+	for message := range p.outgoing {
+		if err := p.conn.WriteJSON(message); err != nil {
+			log.Printf("Closing connection, : %s", err.Error())
+			break
+		}
+	}
 }
 
 func (p *Peer) Read() {
@@ -44,6 +66,6 @@ func (p *Peer) Read() {
 			log.Printf("Closing connection, : %s", err.Error())
 			break
 		}
-		// при каждом полученном сообщениии вызывает HandleMessage
+		hub.HandleMessages(p, message)
 	}
 }
