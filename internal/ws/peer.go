@@ -13,6 +13,7 @@ type Peer struct {
 	roomID		string
 	conn		*websocket.Conn
 	outgoing	chan Message
+	once		sync.Once
 }
 
 func NewPeer(peerId, peerName, roomId string, conn *websocket.Conn) *Peer {
@@ -25,25 +26,37 @@ func NewPeer(peerId, peerName, roomId string, conn *websocket.Conn) *Peer {
 	}
 }
 
-//TODO: сделать Write, доделать Read
-
 // Read: читает и смотрит не умерло ли соединение
 // если оно умерло, вызывает функцию Close -> в ней:
 // закрывается соединение, удаляется peer из Hub (RemovePeer), шлется уведомление об уходе остальным, закрывается канал
 // Write: читает из канала, пока он не закрыт, при ошибке отправки тоже вызывает Close
 
 func (p *Peer) Close() {
-	var once sync.Once
-	once.Do(func(){
-		// Broadcast остальным
-		p.conn.Close()
+	p.once.Do(func(){
+		p.Broadcast(Message{
+			Type: PeerLeft, 
+			RoomID: p.roomID,
+			Name: p.name,
+		})
 		hub.Remove(p)
+		p.conn.Close()
 		close(p.outgoing)
+		log.Println("Connection closed")
 	})
-	log.Println("Connection closed")
 }
 
-func (p *Peer) Broadcast()
+func (p *Peer) Broadcast(message Message) {
+	peers, ok := hub.Rooms[p.roomID]
+	if !ok {
+		return
+	}
+	
+	for id, peer := range peers {
+		if id != p.id {
+			peer.outgoing <- message
+		}
+	}
+}
 
 func (p *Peer) Write() {
 	defer p.Close()

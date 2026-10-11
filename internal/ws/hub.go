@@ -71,7 +71,7 @@ func (h *Hub) Remove(peer *Peer) {
 	}
 }
 
-func (h *Hub) Add(roomId string, peer *Peer) error {
+func (h *Hub) Add(roomId string, peer *Peer) ([]PeerInfo, error) {
 	defer h.mu.Unlock()
 	h.mu.Lock()
 
@@ -79,11 +79,15 @@ func (h *Hub) Add(roomId string, peer *Peer) error {
 	if !ok {
 		h.Rooms[roomId] = make(map[string]*Peer, 4)
 		h.Rooms[roomId][peer.id] = peer
-		return nil
+		return []PeerInfo{}, nil
 	} else if len(peers) == 4 {
-		return errors.New("Room is full (max 4)")
+		return nil, errors.New("Room is full (max 4)")
 	}
 
+	var others []PeerInfo
+	for _, peer := range peers {
+		others = append(others, PeerInfo{PeerId: peer.id, Name: peer.name})
+	}
 	peers[peer.id] = peer
-	return nil
+	return others, nil
 }

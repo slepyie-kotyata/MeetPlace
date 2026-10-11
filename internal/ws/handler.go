@@ -48,7 +48,8 @@ func (ws *WsService) WsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	peer := NewPeer(peerId, peerName, roomId, conn)
 	
-	if err = hub.Add(roomId, peer); err != nil {
+	otherPeers, err := hub.Add(roomId, peer)
+	if err != nil {
 		_ = conn.WriteJSON(Message{
 			Type: Error,
 			Code: RoomFull,
@@ -56,8 +57,24 @@ func (ws *WsService) WsHandler(w http.ResponseWriter, r *http.Request) {
 		})
 		conn.Close()
 	}
-	// запуск горутин Read и Write
-	// отправление подтверждения joined и рассылка peer-joined остальным
+
+	go peer.Read()
+	go peer.Write()
+
+	peer.outgoing <- Message{
+		Type: Joined,
+		RoomID: peer.roomID,
+		PeerID: peer.id,
+		Peers: otherPeers,
+	}
+	
+	peer.Broadcast(Message{
+		Type: PeerJoined,
+		RoomID: peer.roomID,
+		PeerID: peer.id,
+		Name: peer.name,
+	})
+	
 	log.Println("client connected")	
 }
 
