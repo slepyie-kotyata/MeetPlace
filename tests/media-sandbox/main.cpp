@@ -3,6 +3,7 @@
 #include <QQmlContext>
 
 #include "media/LocalCameraManager.h"
+#include "media/AudioManager.h"
 
 int main(int argc, char *argv[])
 {
@@ -10,6 +11,8 @@ int main(int argc, char *argv[])
 
     LocalCameraManager cameraManager;
     qmlRegisterSingletonInstance("MeetPlace.Core", 1, 0, "LocalCameraManager", &cameraManager);
+    AudioManager audioManager;
+    qmlRegisterSingletonInstance("MeetPlace.Core", 1, 0, "AudioManager", &audioManager);
 
     QQmlApplicationEngine engine;
     engine.loadFromModule("MediaSandbox", "Main");
