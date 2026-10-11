@@ -1,6 +1,10 @@
 services:
   server:
     build: .
+    environment:
+          GOOSE_DRIVER: sqlite3
+          GOOSE_DBSTRING: /root/data/users.db
+          GOOSE_MIGRATION_DIR: /root/migrations
     ports:
       - "8000:8000"
     volumes:
