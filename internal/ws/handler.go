@@ -17,8 +17,6 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-//TODO: возможно перенести в /handlers
-
 type WsService struct {
 	dataBase *database.Database
 }

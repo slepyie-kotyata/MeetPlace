@@ -26,11 +26,6 @@ func NewPeer(peerId, peerName, roomId string, conn *websocket.Conn) *Peer {
 	}
 }
 
-// Read: читает и смотрит не умерло ли соединение
-// если оно умерло, вызывает функцию Close -> в ней:
-// закрывается соединение, удаляется peer из Hub (RemovePeer), шлется уведомление об уходе остальным, закрывается канал
-// Write: читает из канала, пока он не закрыт, при ошибке отправки тоже вызывает Close
-
 func (p *Peer) Close() {
 	p.once.Do(func(){
 		p.Broadcast(Message{
@@ -72,8 +67,8 @@ func (p *Peer) Write() {
 func (p *Peer) Read() {
 	defer p.Close()
 
-	var message Message
 	for {
+		var message Message
 		err := p.conn.ReadJSON(&message)
 		if err != nil {
 			log.Printf("Closing connection, : %s", err.Error())
