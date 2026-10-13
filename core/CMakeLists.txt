@@ -15,7 +15,12 @@ target_sources(core PRIVATE
 
 target_include_directories(core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
+find_package(Qt6 REQUIRED COMPONENTS Network Multimedia WebSockets)
+find_package(LibDataChannel REQUIRED)
+
 target_link_libraries(core PUBLIC
     Qt6::Network
     Qt6::Multimedia
+    Qt6::WebSockets
+    LibDataChannel::LibDataChannel
 )
