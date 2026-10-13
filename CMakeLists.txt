@@ -4,7 +4,15 @@ project(MeetPlace VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Quick VirtualKeyboard Multimedia)
+find_package(Qt6 REQUIRED COMPONENTS 
+    Core   
+    Quick 
+    VirtualKeyboard 
+    Multimedia 
+    Network 
+    WebSockets
+)
+find_package(LibDataChannel REQUIRED)
 
 qt_standard_project_setup(REQUIRES 6.10)
 
