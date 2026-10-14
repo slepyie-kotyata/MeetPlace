@@ -1,10 +1,29 @@
 #include <QObject>
 #include <QString>
+#include <qtmetamacros.h>
+
+// Q_PROPERTY: state (Idle/Connecting/Connected/Error), roomJoined(я пока хз зачем оно), muted, cameraOn, screenSharing
 
 class CallController : public QObject {
     Q_OBJECT
-    // Q_PROPERTY: state (Idle/Connecting/Connected/Error), roomJoined, muted, cameraOn, screenSharing
+    enum State{Idle, Connecting, Connected, Error};
+    
+    Q_ENUM(State)
+    Q_PROPERTY(State state READ getState WRITE setState NOTIFY stateChanged)
+    Q_PROPERTY(bool muted READ isMuted WRITE setMuted NOTIFY mutedSet)
+    Q_PROPERTY(bool camera READ getCamera WRITE setCamera NOTIFY cameraChanged)
+    Q_PROPERTY(bool screenSharing READ getScreenSharing WRITE setScreenSharing NOTIFY screenSharingChanged)
 public:
+    State getState() const;
+    bool isMuted() const;
+    bool getCamera() const;
+    bool getScreenSharing() const;
+    
+    void setState(State state);
+    void setMuted(bool muted);
+    void setCamera(bool cameraState);
+    void setScreenSharing(bool screenSharing);
+    
     Q_INVOKABLE void joinRoom(const QString &roomId, const QString &name);
     Q_INVOKABLE void leaveRoom();
     Q_INVOKABLE void toggleMute();
@@ -14,13 +33,15 @@ public:
     Q_INVOKABLE void sendChatMessage(const QString &text);
 signals:
     void stateChanged();
+    void mutedSet();
+    void cameraChanged();
+    
     void participantJoined(const QString &peerId, const QString &name);
     void participantLeft(const QString &peerId);
     void errorOccurred(const QString &code, const QString &message);
-
-  public:
-    CallController(const CallController &) = default;
-    CallController(CallController &&) = default;
-    CallController &operator=(const CallController &) = default;
-    CallController &operator=(CallController &&) = default;
+private:
+    State p_state = Idle;
+    bool p_muted = false;
+    bool p_camera = false;
+    bool p_screen_sharing = false;
 };
