@@ -12,7 +12,16 @@ find_package(Qt6 REQUIRED COMPONENTS
     Network 
     WebSockets
 )
-find_package(LibDataChannel REQUIRED)
+
+# include(FetchContent)
+
+# FetchContent_Declare(
+#     libdatachannel
+#     GIT_REPOSITORY https://github.com/paullouisageneau/libdatachannel.git
+#     GIT_TAG 6b1e2e620f1e37f0eafeee702eaea0043cb305fd
+# )
+
+# FetchContent_MakeAvailable(libdatachannel)
 
 qt_standard_project_setup(REQUIRES 6.10)
 
