@@ -1,3 +1,6 @@
+#ifndef CALLCONTROLLER_H
+#define CALLCONTROLLER_H
+
 #include <QObject>
 #include <QString>
 #include <qtmetamacros.h>
@@ -40,8 +43,11 @@ signals:
     void participantLeft(const QString &peerId);
     void errorOccurred(const QString &code, const QString &message);
 private:
-    State p_state = Idle;
-    bool p_muted = false;
-    bool p_camera = false;
-    bool p_screen_sharing = false;
+    State p_state;
+    bool p_muted;
+    bool p_camera;
+    bool p_screen_sharing;
+public:
+    CallController(QObject *parent = nullptr);
 };
+#endif

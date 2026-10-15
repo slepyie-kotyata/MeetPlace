@@ -6,8 +6,7 @@ media/LocalCameraManager.h media/LocalCameraManager.cpp
 media/AudioManager.h media/AudioManager.cpp)
 
 target_sources(core PRIVATE
-    # Пример заполнения для будущих файлов:
-    # call/CallController.cpp
+    call/CallController.cpp
     call/CallController.h
     # net/SignalClient.cpp
     # net/SignalClient.h
