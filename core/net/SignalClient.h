@@ -7,7 +7,6 @@ class SignalClient : public QObject {
     Q_OBJECT
 public:
     SignalClient(QObject *parent = nullptr);
-
     void connectToServer(const QUrl &url);
     void disconnectFromServer();
     void sendJson(const QJsonObject &json);
@@ -22,6 +21,6 @@ private slots:
     void onTextMessageReceived(const QString &message);
 
 private:
-    QWebSocket m_webSocket;
+    QWebSocket p_webSocket;
 };
 #endif
