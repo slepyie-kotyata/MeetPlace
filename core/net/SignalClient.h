@@ -16,7 +16,6 @@ public:
     void disconnectFromServer();
     void sendJson(const QJsonObject &json);
 private slots:
-    void onConnected();
     void onMessageReceived(const QString &message);
 private:
     QWebSocket p_webSocket;
