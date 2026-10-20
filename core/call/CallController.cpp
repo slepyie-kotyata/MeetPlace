@@ -55,7 +55,6 @@ void CallController::handleMessage(const QJsonObject &message) {
     switch(type){
         case MessageType::Joined:
             setState(Connected);
-            emit stateChanged();
             break;
         case MessageType::PeerJoined:
             emit participantJoined(peerId, name);
@@ -86,7 +85,6 @@ void CallController::handleMessage(const QJsonObject &message) {
 void CallController::handleError(const QString &errorStr) {
     emit errorOccurred("socket_error", errorStr);
     setState(Error);
-    emit stateChanged();
 };
 
 void CallController::joinCall(const QString &roomId, const QString &peerId) {
