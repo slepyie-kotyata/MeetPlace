@@ -16,9 +16,15 @@ func main() {
 	
 	router := http.NewServeMux()
 	router.HandleFunc("GET /ws", wsService.WsHandler)
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+    log.Printf("HTTP request: method=%s path=%s remote=%s",
+        r.Method, r.URL.Path, r.RemoteAddr)
+	
+    router.ServeHTTP(w, r)
+	})
 	
 	log.Println("server started")
-	err = http.ListenAndServe(":8000", router)
+	err = http.ListenAndServe(":8000", handler)
     if err != nil {
         log.Fatal(err)
     }
