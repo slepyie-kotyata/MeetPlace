@@ -17,10 +17,37 @@ ApplicationWindow {
     property color dark: "#262626"
     property color reallyLight: "#e7e7e7"
     property color light: "#e0e0e0"
-
-    MainAppWindow {
+    property bool isDarkMode: false
+    Loader {
+            id: screenLoader
             anchors.fill: parent
+            source: "screens/MainAppWindow.qml"
+
+            onItemChanged: {
+                if (item) {
+                    if (item.hasOwnProperty("isDarkMode")) {
+                        item.isDarkMode = window.isDarkMode
+
+                        item.isDarkModeChanged.connect(function() {
+                            window.isDarkMode = item.isDarkMode
+                        })
+                    }
+
+                    if (item && item.loginRequested) {
+                        item.loginRequested.connect(function() {
+                            screenLoader.source = "screens/HomeAppWindow.qml"
+                        })
+                    }
+                }
+            }
         }
+
+    onIsDarkModeChanged: {
+            if (screenLoader.item && screenLoader.item.hasOwnProperty("isDarkMode")) {
+                screenLoader.item.isDarkMode = window.isDarkMode
+            }
+        }
+
     InputPanel {
         id: inputPanel
         z: 99

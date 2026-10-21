@@ -28,8 +28,10 @@ T.Switch {
     
         border.color: "white"
         border.width: 0
-        color: Tokens.Light_mode.colors.primaryColor
-        radius: 12
+        color: switchRoot.checked ? Tokens.Dark_mode.colors.primaryColor : Tokens.Light_mode.colors.primaryColor
+        radius: height / 2
+
+        Behavior on color { ColorAnimation { duration: 200 } }
     }
     contentItem: Item {
         id: switchRootcontentItem
@@ -47,7 +49,7 @@ T.Switch {
             fillMode: Image.PreserveAspectFit
 
             rotation: 0
-            source: Qt.resolvedUrl("assets/indicator.png")
+            source: "../../assets/indicator.png"
         }
     }
 

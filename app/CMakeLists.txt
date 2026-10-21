@@ -13,9 +13,13 @@ qt_add_qml_module(appMeetPlace
     QML_FILES
         qml/Main.qml
         qml/screens/MainAppWindow.qml
+        qml/screens/HomeAppWindow.qml
         qml/components/ControlsTextField.qml
         qml/components/MainButton_Light.qml
         qml/components/ThemeSwitch.qml
+        qml/components/Icon_Settings.qml
+        qml/components/Icon_Placeholder.qml
+        qml/components/ControlsButton.qml
         qml/theme/DesignTokens/Dark_mode.qml
         qml/theme/DesignTokens/Dark_modeColors.qml
         qml/theme/DesignTokens/Dark_modeTheme.qml

@@ -5,6 +5,8 @@ import "../theme/DesignTokens" as Tokens
 Rectangle {
     id: mainAppWindow
 
+    signal loginRequested()
+
     property bool isDarkMode: false
 
     anchors.fill: parent
@@ -25,13 +27,15 @@ Rectangle {
         height: 302
         width: 400
 
-        color: mainAppWindow.isDarkMode ? Tokens.Dark_mode.colors.panelColor : Tokens.Light_mode.colors.panelColor
+        color: currentTokens.colors.panelColor
         radius: 12
 
         Behavior on color { ColorAnimation { duration: 200 } }
 
         MainButton_Light {
             id: loginButton
+            isDarkMode: mainAppWindow.isDarkMode
+
             x: 40
             y: 226
 
@@ -45,7 +49,15 @@ Rectangle {
             mainButton_LightWidth: 320
             mainButton_LightColor: currentTokens.colors.primaryColor
             labelColor: currentTokens.colors.textColor
-            status_1: MainButton_Light.Status.Status_Default
+
+            MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: {
+                            mainAppWindow.loginRequested()
+                        }
+            }
+
         }
         ControlsTextField {
             id: controlsTextField
@@ -120,8 +132,6 @@ Rectangle {
             anchors.rightMargin: 24
 
             checked: mainAppWindow.isDarkMode
-
-            themeSwitchColor: currentTokens.colors.primaryColor
 
             MouseArea {
                 anchors.fill: parent

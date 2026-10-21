@@ -15,6 +15,12 @@ T.Button {
     property alias mainButton_LightWidth: mainButton_Light.width
     property alias labelColor: label.color
     property alias mainButton_LightColor: mainButton_Light.color
+    property alias labelWidth: label.width
+    property color hoverBorderColor: isDarkMode
+        ? Tokens.Dark_mode.colors.accentColor
+        : Tokens.Light_mode.colors.accentColor
+
+    property bool isDarkMode: false
 
     property string labelText: "Button"
     property int status_1: MainButton_Light.Status.Status_Default
@@ -25,10 +31,21 @@ T.Button {
     background: Rectangle {
         id: mainButton_Light
 
-        border.color: "white"
+        border.color: isDarkMode ? Tokens.Light_mode.colors.primaryColor : Tokens.Dark_mode.colors.primaryColor
         border.width: 0
-        color: Tokens.Light_mode.colors.primaryColor
+        color: mainButton_LightColor
         radius: 4
+        Rectangle {
+                    anchors.fill: parent
+                    radius: parent.radius
+                    color: "#000000"
+                    opacity: buttonRoot.status_1 === MainButton_Light.Status.Status_Pressed ? 0.1 : 0.0
+                    Behavior on opacity { NumberAnimation { duration: 100 } }
+                }
+
+        Behavior on color { ColorAnimation { duration: 200 } }
+        Behavior on border.width { NumberAnimation { duration: 150 } }
+        Behavior on border.color { ColorAnimation { duration: 150 } }
     }
 
     contentItem: Item {
@@ -41,25 +58,67 @@ T.Button {
             y: 11.50
 
             height: 17
-            width: 47
+            width: buttonRoot.width - (x * 2)
 
-            color: Tokens.Light_mode.colors.textColor
+            color: labelColor
             font.family: "Inter"
             font.pixelSize: 14
-            font.weight: Font.DemiBold
-            horizontalAlignment: Text.AlignHCenter
+
+            horizontalAlignment: Text.AlignLeft
             text: buttonRoot.labelText
             verticalAlignment: Text.AlignVCenter
-            wrapMode: Text.Wrap
+            wrapMode: Text.NoWrap
+            Behavior on color { ColorAnimation { duration: 200 } }
         }
     }
+    states: [
+            State {
+                name: "Status=Default"
+                when: buttonRoot.status_1 === MainButton_Light.Status.Status_Default
+                PropertyChanges {
+                                target: mainButton_Light
+                                border.width: 0
+                                border.color: isDarkMode ? Tokens.Dark_mode.colors.primaryColor : Tokens.Light_mode.colors.primaryColor
+                            }
+            },
+            State {
+                name: "Status=Hovered"
+                when: buttonRoot.status_1 === MainButton_Light.Status.Status_Hovered
+                PropertyChanges {
+                    target: mainButton_Light
+                    border.width: 1
+                    border.color: buttonRoot.hoverBorderColor
+                }
+            },
+            State {
+                name: "Status=Pressed"
+                when: buttonRoot.status_1 === MainButton_Light.Status.Status_Pressed
+                PropertyChanges {
+                    target: mainButton_Light
+                    border.width: 1
+                    border.color: buttonRoot.hoverBorderColor
+                }
+            },
+            State {
+                name: "Status=Disabled"
+                when: buttonRoot.status_1 === MainButton_Light.Status.Status_Disabled
+                PropertyChanges {
+                    target: mainButton_Light
+                    border.width: 0
+                    color: "#e3e3e3"
+                }
+            }
+        ]
 
     Binding {
-        property: "status_1"
         target: buttonRoot
-        value: !buttonRoot.enabled ? MainButton_Light.Status.Status_Disabled
-            : buttonRoot.pressed ? MainButton_Light.Status.Status_Pressed
-            : buttonRoot.hovered ? MainButton_Light.Status.Status_Hovered
-            : MainButton_Light.Status.Status_Default
+        property: "status_1"
+        value: !buttonRoot.enabled
+            ? MainButton_Light.Status.Status_Disabled
+            : buttonRoot.pressed
+                ? MainButton_Light.Status.Status_Pressed
+                : buttonRoot.hovered
+                    ? MainButton_Light.Status.Status_Hovered
+                    : MainButton_Light.Status.Status_Default
     }
-}
+    }
