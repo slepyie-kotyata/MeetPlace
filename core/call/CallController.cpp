@@ -34,14 +34,14 @@ static const QHash<QString, MessageType> typeMap = {
 };
 
 CallController::CallController(QObject *parent) 
-    : QObject(parent), p_state(Idle)
+    : QObject(parent), state(Idle)
 {
-    p_sclient = new SignalClient(this);
-    connect(p_sclient, &SignalClient::socketDisconnected, this, [this]() {
+    sygClient = new SignalClient(this);
+    connect(sygClient, &SignalClient::socketDisconnected, this, [this]() {
         setState(Idle);
     });
-    connect(p_sclient, &SignalClient::socketError, this, &CallController::handleError);
-    connect(p_sclient, &SignalClient::messageReceived, this, &CallController::handleMessage);
+    connect(sygClient, &SignalClient::socketError, this, &CallController::handleError);
+    connect(sygClient, &SignalClient::messageReceived, this, &CallController::handleMessage);
 };
 
 void CallController::handleMessage(const QJsonObject &message) {
@@ -96,21 +96,21 @@ void CallController::joinCall(const QString &roomId, const QString &peerId) {
     query.addQueryItem("peer_id", peerId);
     url.setQuery(query);
     
-    p_sclient->connectToServer(url);
+    sygClient->connectToServer(url);
 };
 
 void CallController::leaveCall() {
-    p_sclient->disconnectFromServer();
+    sygClient->disconnectFromServer();
     setState(Idle);
 };
 
 CallController::State CallController::getState() const {
-    return p_state;
+    return state;
 };
 
 void CallController::setState(State state) {
-    if (p_state != state) {
-        p_state = state;
+    if (this->state != state) {
+        this->state = state;
         emit stateChanged();
     }
 };

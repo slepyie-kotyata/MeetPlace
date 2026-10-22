@@ -27,8 +27,8 @@ private slots:
     void handleMessage(const QJsonObject &message);
     void handleError(const QString &errorStr);
 private:
-    State p_state;
-    SignalClient *p_sclient;
+    State state;
+    SignalClient *sygClient;
     void setState(State state);
 };
 #endif
