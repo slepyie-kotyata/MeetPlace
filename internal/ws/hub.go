@@ -45,6 +45,8 @@ func (h *Hub) HandleMessages(peer *Peer, message Message) {
 				}
 			}
 			target.outgoing <- message
+		case StateChanged:
+			peer.Broadcast(message)
 		default:
 			peer.outgoing <- Message{
 				Type: Error,

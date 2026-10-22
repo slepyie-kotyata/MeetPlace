@@ -15,6 +15,7 @@ const (
 	Offer = "offer"
 	Answer = "answer"
 	Ice = "ice"
+	StateChanged = "state-changed"
 	//server messages type
 	Joined = "joined"
 	PeerJoined = "peer-joined"
@@ -24,12 +25,13 @@ const (
 
 type Message struct {
 	Type		string			`json:"type"`
-	RoomID		string			`json:"room_id,omitempty"`
 	PeerID		string			`json:"peer_id,omitempty"`
 	TargetID  	string			`json:"target_id,omitempty"`
 	Name     	string			`json:"name,omitempty"`
 	Payload 	json.RawMessage `json:"payload,omitempty"`
 	Peers		[]PeerInfo		`json:"peers,omitempty"`
+	Media		string			`json:"media,omitempty"`
+	Enabled		bool			`json:"enabled,omitempty"`
 	Code    	string 			`json:"code,omitempty"`
 	Message 	string 			`json:"message,omitempty"`
 }

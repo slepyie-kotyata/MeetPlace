@@ -29,9 +29,8 @@ func NewPeer(peerId, peerName, roomId string, conn *websocket.Conn) *Peer {
 func (p *Peer) Close() {
 	p.once.Do(func(){
 		p.Broadcast(Message{
-			Type: PeerLeft, 
-			RoomID: p.roomID,
-			Name: p.name,
+			Type: PeerLeft,
+			PeerID: p.id,
 		})
 		hub.Remove(p)
 		p.conn.Close()

@@ -61,14 +61,12 @@ func (ws *WsService) WsHandler(w http.ResponseWriter, r *http.Request) {
 
 	peer.outgoing <- Message{
 		Type: Joined,
-		RoomID: peer.roomID,
 		PeerID: peer.id,
 		Peers: otherPeers,
 	}
 	
 	peer.Broadcast(Message{
 		Type: PeerJoined,
-		RoomID: peer.roomID,
 		PeerID: peer.id,
 		Name: peer.name,
 	})
