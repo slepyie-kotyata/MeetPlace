@@ -17,6 +17,7 @@ enum class MessageType {
     Joined,
     PeerJoined,
     PeerLeft,
+    StateChanged,
     Offer,
     Ice,
     Answer,
@@ -27,6 +28,7 @@ static const QHash<QString, MessageType> typeMap = {
     {"joined", MessageType::Joined},
     {"peer-joined", MessageType::PeerJoined},
     {"peer-left", MessageType::PeerLeft},
+    {"state-changed", MessageType::StateChanged},
     {"offer", MessageType::Offer},
     {"answer", MessageType::Answer},
     {"ice", MessageType::Ice},
@@ -61,6 +63,8 @@ void CallController::handleMessage(const QJsonObject &message) {
             break;
         case MessageType::PeerLeft:
             emit participantLeft(peerId);
+            break;
+        case MessageType::StateChanged:
             break;
         case MessageType::Offer:
             break;
