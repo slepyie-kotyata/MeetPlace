@@ -10,10 +10,10 @@ int main(int argc, char *argv[]) {
     QObject::connect(&controller, &CallController::stateChanged, [&controller]() {
         qDebug() << "[STATE]: State changed to:" << controller.getState();
     });
-    QObject::connect(&controller, &CallController::participantJoined, [](const QString &peerId, const QString &name) {
+    QObject::connect(&controller, &CallController::peerJoined, [](const QString &peerId, const QString &name) {
         qDebug() << "[EVENT]: Peer joined" << name << "(ID:" << peerId << ")";
     });
-    QObject::connect(&controller, &CallController::participantLeft, [](const QString &peerId) {
+    QObject::connect(&controller, &CallController::peerLeft, [](const QString &peerId) {
         qDebug() << "[EVENT]: Peer left ID:" << peerId;
     });
     QObject::connect(&controller, &CallController::errorOccurred, [](const QString &code, const QString &msg) {

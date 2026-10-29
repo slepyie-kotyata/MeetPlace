@@ -36,14 +36,14 @@ static const QHash<QString, MessageType> typeMap = {
 };
 
 CallController::CallController(QObject *parent) 
-    : QObject(parent), state(Idle)
+    : QObject(parent), connState(Idle), micEnabled(false), cameraEnabled(false)
 {
-    sygClient = new SignalClient(this);
-    connect(sygClient, &SignalClient::socketDisconnected, this, [this]() {
+    sigClient = new SignalClient(this);
+    connect(sigClient, &SignalClient::socketDisconnected, this, [this]() {
         setState(Idle);
     });
-    connect(sygClient, &SignalClient::socketError, this, &CallController::handleError);
-    connect(sygClient, &SignalClient::messageReceived, this, &CallController::handleMessage);
+    connect(sigClient, &SignalClient::socketError, this, &CallController::handleError);
+    connect(sigClient, &SignalClient::messageReceived, this, &CallController::handleMessage);
 };
 
 void CallController::handleMessage(const QJsonObject &message) {
@@ -59,10 +59,10 @@ void CallController::handleMessage(const QJsonObject &message) {
             setState(Connected);
             break;
         case MessageType::PeerJoined:
-            emit participantJoined(peerId, name);
+            emit peerJoined(peerId, name);
             break;
         case MessageType::PeerLeft:
-            emit participantLeft(peerId);
+            emit peerLeft(peerId);
             break;
         case MessageType::StateChanged:
             break;
@@ -93,28 +93,64 @@ void CallController::handleError(const QString &errorStr) {
 
 void CallController::joinCall(const QString &roomId, const QString &peerId) {
     setState(Connecting);
-
+    id = peerId;
+    
     QUrl url(WS_URL);
     QUrlQuery query;
     query.addQueryItem("room_id", roomId);
-    query.addQueryItem("peer_id", peerId);
+    query.addQueryItem("peer_id", id);
     url.setQuery(query);
     
-    sygClient->connectToServer(url);
+    sigClient->connectToServer(url);
 };
 
 void CallController::leaveCall() {
-    sygClient->disconnectFromServer();
+    sigClient->disconnectFromServer();
     setState(Idle);
 };
 
-CallController::State CallController::getState() const {
-    return state;
+CallController::ConnState CallController::getState() const {
+    return connState;
 };
 
-void CallController::setState(State state) {
-    if (this->state != state) {
-        this->state = state;
+void CallController::setState(ConnState state) {
+    if (this->connState != state) {
+        this->connState = state;
         emit stateChanged();
     }
 };
+
+bool CallController::isMicEnabled() const { return micEnabled; };
+bool CallController::isCameraEnabled() const { return cameraEnabled; };
+
+void CallController::toggleMic() {
+    emit micToggleRequested(!micEnabled);
+};
+
+void CallController::toggleCamera() {
+    emit cameraToggleRequested(!cameraEnabled);
+};
+
+void CallController::micToggleConfirmed(bool enable) {
+    micEnabled = enable;
+    emit micEnabledChanged(micEnabled);
+
+    QJsonObject msg;
+    msg["type"] = "state-changed";
+    msg["peerId"] = id;
+    msg["media"] = "audio";
+    msg["enabled"] = micEnabled;
+    sigClient->sendJson(msg);
+};
+
+void CallController::cameraToggleConfirmed(bool enable) {
+    cameraEnabled = enable;
+    emit cameraEnabledChanged(cameraEnabled);
+
+    QJsonObject msg;
+    msg["type"] = "state-changed";
+    msg["peerId"] = id;
+    msg["media"] = "video";
+    msg["enabled"] = micEnabled;
+    sigClient->sendJson(msg); 
+}
