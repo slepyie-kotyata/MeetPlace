@@ -73,6 +73,7 @@ void CallController::handleMessage(const QJsonObject &message) {
         case MessageType::Ice:
             break;
         case MessageType::Error: {
+            setState(Error);
             QString code = message.value("code").toString();
             QString msg = message.value("message").toString();
             emit errorOccurred(code, msg);
@@ -136,7 +137,7 @@ void CallController::micToggleConfirmed(bool enable) {
     emit micEnabledChanged(micEnabled);
 
     QJsonObject msg;
-    msg["type"] = "state-changed";
+    msg["type"] = typeMap.key(MessageType::StateChanged);
     msg["peerId"] = id;
     msg["media"] = "audio";
     msg["enabled"] = micEnabled;
@@ -148,7 +149,7 @@ void CallController::cameraToggleConfirmed(bool enable) {
     emit cameraEnabledChanged(cameraEnabled);
 
     QJsonObject msg;
-    msg["type"] = "state-changed";
+    msg["type"] = typeMap.key(MessageType::StateChanged);
     msg["peerId"] = id;
     msg["media"] = "video";
     msg["enabled"] = micEnabled;
