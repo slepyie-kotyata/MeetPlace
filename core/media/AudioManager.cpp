@@ -6,13 +6,15 @@
 
 #include <QGuiApplication>
 
+#include <algorithm>
+
 AudioManager::AudioManager(QObject *parent)
     : QObject(parent), m_devices(new QMediaDevices(this)),
     m_timer(new QTimer(this))
 {
     refreshDeviceLists();
     connect(m_devices, &QMediaDevices::audioInputsChanged,
-            this, &AudioManager::refreshDeviceLists);
+            this, &AudioManager::handleInputsChanged);
     connect(m_devices, &QMediaDevices::audioOutputsChanged,
             this, &AudioManager::refreshDeviceLists);
 
@@ -45,20 +47,50 @@ void AudioManager::selectOutput(const QString &deviceId)
 
 void AudioManager::startMeter()
 {
-    if(m_metering) stopMeter();
+    if (m_metering) stopMeter();
 
+    switch (ensureMicPermission([this] { startMeter(); })) {
+    case Qt::PermissionStatus::Granted:
+        openInput();
+        return;
+    case Qt::PermissionStatus::Undetermined:
+        return;
+    case Qt::PermissionStatus::Denied:
+        return;
+    }
+}
+
+Qt::PermissionStatus AudioManager::ensureMicPermission(const std::function<void()> &onGrantedAsync)
+{
     QMicrophonePermission micPermission;
     switch (qGuiApp->checkPermission(micPermission)) {
     case Qt::PermissionStatus::Undetermined:
-        qGuiApp->requestPermission(micPermission, this, [this] { startMeter(); });
-        return;
+        qGuiApp->requestPermission(micPermission, this, onGrantedAsync);
+        return Qt::PermissionStatus::Undetermined;
     case Qt::PermissionStatus::Denied:
         qWarning() << "Microphone permission denied";
-        return;
+        emit mediaErrorOccurred(QStringLiteral("permission-denied"),
+            QStringLiteral("Нет доступа к микрофону (System Settings → Privacy → Microphone)"));
+        return Qt::PermissionStatus::Denied;
     case Qt::PermissionStatus::Granted:
         break;
     }
+    return Qt::PermissionStatus::Granted;
+}
 
+void AudioManager::resumeMicEnable()
+{
+    if (!m_awaitingMicPermission) return;
+    m_awaitingMicPermission = false;
+    if (m_source) {
+        emit micStateChanged(true);
+        return;
+    }
+    if (openInput()) emit micStateChanged(true);
+}
+
+bool AudioManager::openInput()
+{
     if (m_inputDevice.isNull()) {
         m_inputDevice = QMediaDevices::defaultAudioInput();
         emit selectedInputChanged();
@@ -75,11 +107,73 @@ void AudioManager::startMeter()
         qWarning() << "Failed to start audio input";
         m_source->deleteLater();
         m_source = nullptr;
-        return;
+        emit mediaErrorOccurred(QStringLiteral("open-failed"),
+            QStringLiteral("Не удалось открыть микрофон: %1").arg(m_inputDevice.description()));
+        return false;
     }
     m_timer->start();
     m_metering = true;
     emit meteringChanged();
+    return true;
+}
+
+void AudioManager::closeInput()
+{
+    if (!m_source) return;
+    m_timer->stop();
+    m_source->stop();
+    m_io = nullptr;
+    m_source->deleteLater();
+    m_source = nullptr;
+    m_metering = false;
+    emit meteringChanged();
+}
+
+void AudioManager::onMicToggleRequested(bool enable)
+{
+    if (enable) {
+        if (m_source) {
+            emit micStateChanged(true);
+            return;
+        }
+        m_awaitingMicPermission = true;
+        switch (ensureMicPermission([this] { resumeMicEnable(); })) {
+        case Qt::PermissionStatus::Granted:
+            m_awaitingMicPermission = false;
+            if (openInput()) emit micStateChanged(true);
+            return;
+        case Qt::PermissionStatus::Undetermined:
+            return;
+        case Qt::PermissionStatus::Denied:
+            m_awaitingMicPermission = false;
+            return;
+        }
+        return;
+    }
+
+    m_awaitingMicPermission = false;
+    if (m_source) {
+        closeInput();
+        emit micStateChanged(false);
+    }
+}
+
+void AudioManager::handleInputsChanged()
+{
+    refreshDeviceLists();
+
+    if (!m_source) return;
+    const QByteArray activeId = m_inputDevice.id();
+    const auto inputs = m_devices->audioInputs();
+    const bool lost = std::none_of(inputs.cbegin(), inputs.cend(),
+                                   [&activeId](const QAudioDevice &d) { return d.id() == activeId; });
+    if (lost) {
+        qWarning() << "Audio input lost:" << m_inputDevice.description();
+        closeInput();
+        emit micStateChanged(false);
+        emit mediaErrorOccurred(QStringLiteral("device-lost"),
+            QStringLiteral("Микрофон отключён: %1").arg(QString::fromUtf8(activeId)));
+    }
 }
 
 void AudioManager::processSamples(const void *data, qsizetype bytes)
@@ -126,14 +220,7 @@ void AudioManager::processSamples(const void *data, qsizetype bytes)
 
 void AudioManager::stopMeter()
 {
-    if (!m_source) return;
-    m_timer->stop();
-    m_source->stop();
-    m_io = nullptr;
-    m_source->deleteLater();
-    m_source = nullptr;
-    m_metering = false;
-    emit meteringChanged();
+    closeInput();
 }
 
 AudioManager::~AudioManager() { stopMeter(); }

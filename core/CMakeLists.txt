@@ -1,6 +1,5 @@
 qt_add_library(core STATIC
 call/CallController.h
-models/.gitkeep
 media/LocalCameraManager.h media/LocalCameraManager.cpp
 media/AudioManager.h media/AudioManager.cpp
 models/PeerModel.h)
