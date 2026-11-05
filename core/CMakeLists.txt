@@ -2,13 +2,15 @@ qt_add_library(core STATIC
 call/CallController.h
 models/.gitkeep
 media/LocalCameraManager.h media/LocalCameraManager.cpp
-media/AudioManager.h media/AudioManager.cpp)
+media/AudioManager.h media/AudioManager.cpp
+models/PeerModel.h)
 
 target_sources(core PRIVATE
     call/CallController.cpp
     call/CallController.h
     net/SignalClient.cpp
     net/SignalClient.h
+    models/PeerModel.h
 )
 
 target_include_directories(core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
