@@ -152,6 +152,10 @@ void CallController::cameraToggleConfirmed(bool enable) {
     msg["type"] = typeMap.key(MessageType::StateChanged);
     msg["peerId"] = id;
     msg["media"] = "video";
-    msg["enabled"] = micEnabled;
-    sigClient->sendJson(msg); 
-}
+    msg["enabled"] = cameraEnabled;
+    sigClient->sendJson(msg);
+};
+
+void CallController::mediaError(const QString code, const QString msg) {
+    emit errorOccurred(code, msg);
+};
