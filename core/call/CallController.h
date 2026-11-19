@@ -41,6 +41,7 @@ public:
 public slots:
     void micToggleConfirmed(bool enable);
     void cameraToggleConfirmed(bool enable);
+    void mediaError(const QString code, const QString msg);
 private slots:
     void handleMessage(const QJsonObject &message);
     void handleError(const QString &errorStr);
