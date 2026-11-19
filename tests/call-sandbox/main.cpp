@@ -61,10 +61,10 @@ int main(int argc, char *argv[]) {
     QObject::connect(&camera, &LocalCameraManager::cameraStateChanged,
                      &controller, &CallController::cameraToggleConfirmed);
     // TODO(dev3): раскомментировать после добавления CallController::mediaError(code, msg)
-    // QObject::connect(&audio, &AudioManager::mediaErrorOccurred,
-    //                  &controller, &CallController::mediaError);
-    // QObject::connect(&camera, &LocalCameraManager::mediaErrorOccurred,
-    //                  &controller, &CallController::mediaError);
+    QObject::connect(&audio, &AudioManager::mediaErrorOccurred,
+                      &controller, &CallController::mediaError);
+    QObject::connect(&camera, &LocalCameraManager::mediaErrorOccurred,
+                      &controller, &CallController::mediaError);
 
     // --- сценарий ---
     QTimer::singleShot(100, [&controller]() {
