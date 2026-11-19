@@ -1,3 +1,5 @@
 .env
 *.db
 data/
+/build
+.qtcreator/CMakeLists.txt.user
