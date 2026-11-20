@@ -41,13 +41,14 @@ set(USE_STATIC_MBEDTLS_LIBRARY ON CACHE BOOL "" FORCE)
 set(USE_SHARED_MBEDTLS_LIBRARY OFF CACHE BOOL "" FORCE)
 
 FetchContent_Declare(
-    mbedtls
-    GIT_REPOSITORY https://github.com/Mbed-TLS/mbedtls.git
-    GIT_TAG mbedtls-3.6.7
-    GIT_SUBMODULES_RECURSE TRUE
+    mbedtls_archive
+    URL https://github.com/Mbed-TLS/mbedtls/releases/download/mbedtls-3.6.7/mbedtls-3.6.7.tar.bz2
+    URL_HASH SHA256=a7e8bcbec0e6f761b4af24f25677626b35f762f68eef79c08677a363212d11f6
 )
 
-FetchContent_MakeAvailable(mbedtls)
+FetchContent_MakeAvailable(mbedtls_archive)
+
+set(mbedtls_SOURCE_DIR "${mbedtls_archive_SOURCE_DIR}")
 
 target_compile_definitions(mbedtls
     PUBLIC MBEDTLS_SSL_DTLS_SRTP
