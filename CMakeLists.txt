@@ -49,6 +49,10 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(mbedtls)
 
+target_compile_definitions(mbedtls
+    PUBLIC MBEDTLS_SSL_DTLS_SRTP
+)
+
 list(PREPEND CMAKE_MODULE_PATH
     "${CMAKE_CURRENT_SOURCE_DIR}/cmake"
 )
