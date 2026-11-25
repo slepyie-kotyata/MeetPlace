@@ -1,1 +1,13 @@
 data/
+.git
+build/
+tests/
+app/
+core/
+importedcontent/
+.qtcreator/
+.github/
+.DS_Store
+CMakeLists.txt
+PLAN.md
+Makefile

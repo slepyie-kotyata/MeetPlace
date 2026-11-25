@@ -5,10 +5,25 @@ import (
 
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type Database struct {
 	dbConn	*gorm.DB
+}
+
+func seedTestUsers(db *gorm.DB) error {
+    testUsers := []User{
+        {Id: "user1", UserName: "TestUser1", Password: "abcd1"},
+        {Id: "user2", UserName: "TestUser2", Password: "abcd2"},
+        {Id: "user3", UserName: "TestUser3", Password: "abcd3"},
+        {Id: "user4", UserName: "TestUser4", Password: "abcd4"},
+    }
+
+    return db.Clauses(clause.OnConflict{
+        Columns: []clause.Column{{Name: "id"}},
+        DoNothing: true,
+    }).Create(&testUsers).Error
 }
 
 func NewDatabase() (*Database, error) {
@@ -17,6 +32,11 @@ func NewDatabase() (*Database, error) {
 		return nil, err
 	}
 
+	db.AutoMigrate(&User{})
+	if err := seedTestUsers(db); if err != nil {
+		return nil, err
+	}
+	
 	return &Database{
 		dbConn: db,
 	}, nil
