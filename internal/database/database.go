@@ -33,7 +33,7 @@ func NewDatabase() (*Database, error) {
 	}
 
 	db.AutoMigrate(&User{})
-	if err := seedTestUsers(db); if err != nil {
+	if err := seedTestUsers(db); err != nil {
 		return nil, err
 	}
 	
