@@ -20,8 +20,7 @@ public:
         PeerIdRole = Qt::UserRole + 1,
         NameRole,
         MicRole,
-        CameraRole,
-        SpeakingRole
+        CameraRole
     };
     Q_ENUM(PeerRoles)
     PeerModel(QObject *parent = nullptr);
@@ -34,11 +33,9 @@ public:
     void removePeer(const QString &peerId);
     void setPeerMic(const QString &peerId, bool micOn);
     void setPeerCamera(const QString &peerId, bool cameraOn);
-signals:
-    
-    
 private:
     QList<Peer> peers;
     int findPeer(const QString &peerId) const;
+    void notifyPeerChanged(int row, int role);
 };
 #endif

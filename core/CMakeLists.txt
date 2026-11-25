@@ -3,7 +3,7 @@ call/CallController.h
 models/.gitkeep
 media/LocalCameraManager.h media/LocalCameraManager.cpp
 media/AudioManager.h media/AudioManager.cpp
-models/PeerModel.h)
+models/PeerModel.h models/PeerModel.cpp)
 
 target_sources(core PRIVATE
     call/CallController.cpp
@@ -11,6 +11,7 @@ target_sources(core PRIVATE
     net/SignalClient.cpp
     net/SignalClient.h
     models/PeerModel.h
+    models/PeerModel.cpp
 )
 
 target_include_directories(core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

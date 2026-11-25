@@ -8,6 +8,8 @@
 
 // ОСТАВЬ НАДЕЖДУ ВСЯК СЮДА ВХОДЯЩИЙ
 
+//TODO: связать с PeerModel
+
 namespace {
     constexpr const char* WS_URL = "wss://meetplace.enjine.ru/ws";
 }
@@ -81,7 +83,7 @@ void CallController::handleMessage(const QJsonObject &message) {
         }
         case MessageType::Unknown:
         default:
-            qDebug() << "uknown type: " << typeStr;
+            qDebug() << "unknown type: " << typeStr;
             break;
     }
     qDebug() << "message: " << jsonString;
