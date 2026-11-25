@@ -43,6 +43,7 @@ func (h *Hub) HandleMessages(peer *Peer, message Message) {
 					Code: PeerNotFound,
 					Message: fmt.Sprintf("peer %s not found", message.TargetID),
 				}
+				return
 			}
 			target.outgoing <- message
 		case StateChanged:

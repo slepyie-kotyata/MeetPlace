@@ -40,10 +40,13 @@ func (p *Peer) Close() {
 }
 
 func (p *Peer) Broadcast(message Message) {
+	hub.mu.RLock()
 	peers, ok := hub.Rooms[p.roomID]
 	if !ok {
+		hub.mu.RUnlock()
 		return
 	}
+	hub.mu.RUnlock()
 	
 	for id, peer := range peers {
 		if id != p.id {
