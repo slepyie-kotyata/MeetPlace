@@ -29,22 +29,33 @@ public:
 
 public slots:
     void setVideoSink(QVideoSink *sink);
+    // хэндшейк с CallController:
+    // CallController::cameraToggleRequested -> сюда,
+    // LocalCameraManager::cameraStateChanged -> CallController::cameraToggleConfirmed
+    void onCameraToggleRequested(bool enable);
 
 signals:
     void camerasChanged();
     void activeChanged();
     void videoSinkChanged();
     void frameArrived(int width, int height, int pixelFormat);
+    void cameraStateChanged(bool enabled);
+    void mediaErrorOccurred(const QString &code, const QString &message);
+
+private slots:
+    void handleVideoInputsChanged();
 
 private:
     void refreshCameraList();
     QCameraDevice findDevice(const QString &deviceId) const;
+    bool openCamera(const QString &deviceId);
 
     QMediaDevices *m_devices = nullptr;
     QCamera *m_camera = nullptr;
     QMediaCaptureSession *m_session = nullptr;
     QVariantList m_cameras;
     bool m_active = false;
+    QString m_lastDeviceId; // последняя успешно открытая камера (для toggle)
 };
 
 #endif // LOCALCAMERAMANAGER_H
