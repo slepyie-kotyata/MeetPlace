@@ -6,6 +6,7 @@
 #include <qobject.h>
 #include <qtmetamacros.h>
 #include "net/SignalClient.h"
+#include "models/PeerModel.h"
 
 // Q_PROPERTY: state (Idle/Connecting/Connected/Error), roomJoined(я пока хз зачем оно), muted, cameraOn, screenSharing
 // возможно вынести типы ошибок в отдельную структуру
@@ -51,6 +52,7 @@ private:
     bool micEnabled;
     bool cameraEnabled;
     SignalClient *sigClient;
+    PeerModel *peerModel;
     void setState(ConnState state);
 };
 #endif
