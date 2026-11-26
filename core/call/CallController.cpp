@@ -1,12 +1,16 @@
 #include "CallController.h"
+#include "models/PeerModel.h"
 #include "net/SignalClient.h"
 #include <qlogging.h>
 #include <qobject.h>
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <QUrlQuery>
+#include <QJsonArray>
 
 // ОСТАВЬ НАДЕЖДУ ВСЯК СЮДА ВХОДЯЩИЙ
+
+//TODO: связать с PeerModel
 
 namespace {
     constexpr const char* WS_URL = "wss://meetplace.enjine.ru/ws";
@@ -38,6 +42,7 @@ static const QHash<QString, MessageType> typeMap = {
 CallController::CallController(QObject *parent) 
     : QObject(parent), connState(Idle), micEnabled(false), cameraEnabled(false)
 {
+    peerModel = new PeerModel(this);
     sigClient = new SignalClient(this);
     connect(sigClient, &SignalClient::socketDisconnected, this, [this]() {
         setState(Idle);
@@ -48,24 +53,52 @@ CallController::CallController(QObject *parent)
 
 void CallController::handleMessage(const QJsonObject &message) {
     QString typeStr = message.value("type").toString(); 
-    QString peerId = message.value("peerId").toString(); 
+    QString id = message.value("peerId").toString(); 
     QString name = message.value("name").toString();
     QJsonDocument doc(message);
     QString jsonString = doc.toJson(QJsonDocument::Indented);
     
     MessageType type = typeMap.value(typeStr, MessageType::Unknown);
     switch(type){
-        case MessageType::Joined:
+        // сейчас при сообщении joined не передаются статус камеры и микрофона, возможны проблемы
+        // TODO: перенести код из case в методы
+
+        case MessageType::Joined: {
             setState(Connected);
+            QJsonArray peers = message.value("peers").toArray();
+            if (!peers.isEmpty()) {
+                for (const QJsonValue &value : peers) {
+                    if (!value.isObject()) {
+                       continue; 
+                    }
+                    QJsonObject peer = value.toObject();
+                    QString peerId = peer.value("peerId").toString();
+                    QString peerName = peer.value("name").toString();
+                    peerModel->addPeer(peerId, peerName);
+                }
+            }
             break;
+        }
         case MessageType::PeerJoined:
-            emit peerJoined(peerId, name);
+            peerModel->addPeer(id, name);
+            emit peerJoined(id, name);
             break;
         case MessageType::PeerLeft:
-            emit peerLeft(peerId);
+            peerModel->removePeer(id);
+            emit peerLeft(id);
             break;
-        case MessageType::StateChanged:
+        case MessageType::StateChanged: {
+            QString media = message.value("media").toString();
+            bool isEnabled = message.value("enabled").toBool();
+            
+            if (media == "video") {
+                peerModel->setPeerCamera(id, isEnabled);
+            }
+            if (media == "audio") {
+                peerModel->setPeerMic(id, isEnabled);
+            }
             break;
+        }
         case MessageType::Offer:
             break;
         case MessageType::Answer:
@@ -81,7 +114,7 @@ void CallController::handleMessage(const QJsonObject &message) {
         }
         case MessageType::Unknown:
         default:
-            qDebug() << "uknown type: " << typeStr;
+            qDebug() << "unknown type: " << typeStr;
             break;
     }
     qDebug() << "message: " << jsonString;
